@@ -29,3 +29,9 @@ How to Run
    M-x realtime-markdown-viewer-mode
 
 ````
+
+
+Limitation
+----------
+* English only(Error is occured if you use Japanese)
+* There are some bugs.
