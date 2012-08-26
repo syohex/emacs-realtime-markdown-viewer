@@ -40,6 +40,8 @@
          "ws://127.0.0.1:5000/emacs"
          :on-message (lambda (websocket frame)
                        (message "%s" (websocket-frame-payload frame)))
+         :on-error (lambda (ws type err)
+                     (message "error connecting"))
          :on-close (lambda (websocket) (setq wstest-closed t)))))
 
 (defun rtmv:send-to-server ()
