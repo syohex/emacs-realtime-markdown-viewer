@@ -47,7 +47,8 @@
 (defun rtmv:send-to-server ()
   (if realtime-markdown-viewer-mode
       (let ((str (buffer-substring-no-properties (point-min) (point-max))))
-        (websocket-send-text rtmv:websocket str))))
+        (websocket-send-text rtmv:websocket
+                             (encode-coding-string str 'raw-text)))))
 
 (defun rtmv:init ()
   (rtmv:init-websocket)
