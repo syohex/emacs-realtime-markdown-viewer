@@ -33,5 +33,4 @@ How to Run
 
 Limitation
 ----------
-* English only(Error is occured if you use Japanese)
 * There are some bugs.
