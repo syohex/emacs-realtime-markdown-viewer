@@ -90,8 +90,8 @@ __DATA__
     <meta charset="utf-8">
     <title>Realtime Markdown Viewer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-    <link rel="stylesheet" href="http://twitter.github.com/bootstrap/1.4.0/bootstrap.min.css">
+    <script type="text/javascript" src="/static/jquery.min.js"></script>
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
 </head>
 <body>
     <div class="container">
