@@ -3,7 +3,7 @@
 ;; Copyright (C) 2012 by Syohei YOSHIDA
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
-;; URL:
+;; URL: https://github.com/syohex/emacs-realtime-markdown-viewer
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -30,28 +30,54 @@
 (defgroup realtime-markdown-viewer nil
   "Realtime Markdown Viewer"
   :group 'text
-  :prefix 'rtmv:)
+  :prefix "rtmv:")
+
+(defcustom rtmv:port 5021
+  "Port number for Plack App"
+  :type 'integer
+  :group 'reltime-markdown-viewer)
 
 (defvar rtmv:websocket)
 
-(defun rtmv:init-websocket ()
-  (setq rtmv:websocket
-        (websocket-open
-         "ws://127.0.0.1:5000/emacs"
-         :on-message (lambda (websocket frame)
-                       (message "%s" (websocket-frame-payload frame)))
-         :on-error (lambda (ws type err)
-                     (message "error connecting"))
-         :on-close (lambda (websocket) (setq wstest-closed t)))))
+(defun rtmv:init-websocket (port)
+  (let ((url (format "ws://0.0.0.0:%d/emacs" port)))
+    (message "Connect to %s" url)
+    (setq rtmv:websocket
+          (websocket-open
+           url
+           :on-message (lambda (websocket frame)
+                         (message "%s" (websocket-frame-payload frame)))
+           :on-error (lambda (ws type err)
+                       (message "error connecting"))
+           :on-close (lambda (websocket) (setq wstest-closed t))))))
 
 (defun rtmv:send-to-server ()
-  (if realtime-markdown-viewer-mode
-      (let ((str (buffer-substring-no-properties (point-min) (point-max))))
-        (websocket-send-text rtmv:websocket str))))
+  (when realtime-markdown-viewer-mode
+    (let ((str (buffer-substring-no-properties (point-min) (point-max))))
+      (websocket-send-text rtmv:websocket str))))
+
+(defvar rtmv:plackup-process nil)
+
+(defvar rtmv:psgi-file "realtime-md-server.psgi"
+  "File name of Realtime markdown viewer app")
+
+(defvar rtmv:psgi-path
+  (when load-file-name
+    (let ((installed-dir (file-name-directory load-file-name)))
+      (concat installed-dir rtmv:psgi-file)))
+  "PSGI full path")
+
+(defun rtmv:plackup (port)
+  (let ((cmd (format "plackup --port %d %s" port rtmv:psgi-path)))
+    (setq rtmv:plackup-process
+          (start-process-shell-command "plackup" "*plackup*" cmd))))
 
 (defun rtmv:init ()
-  (rtmv:init-websocket)
-  (add-hook 'post-command-hook 'rtmv:send-to-server nil t))
+  (let ((port rtmv:port))
+    (rtmv:plackup port)
+    (sleep-for 1)
+    (rtmv:init-websocket port)
+    (add-hook 'post-command-hook 'rtmv:send-to-server nil t)))
 
 (defun rtmv:finalize ()
   (websocket-close rtmv:websocket)
