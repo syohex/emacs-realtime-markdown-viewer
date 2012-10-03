@@ -1,10 +1,9 @@
-Emacs Realtime Markdown Viewer
-===============================
-Emacs readltime markdown viewer with websocket.el and Amon2.
+# Emacs Realtime Markdown Viewer
+
+Emacs Realtime Markdown Viewer with websocket.el and Amon2.
 
 
-Requirements
-------------
+## Requirements
 * Emacs 23 or higher. (version 24 is better than version 23)
 * Latest [websocket.el](https://github.com/ahyatt/emacs-websocket)
     - websocket.el older than 2012/SEP/01 does not support multibyte characters
@@ -12,24 +11,20 @@ Requirements
 * [Amon2::Lite](https://github.com/tokuhirom/Amon2-Lite)
 
 
-Demonstration
--------------
+## Demonstration
 * [youtube](http://www.youtube.com/watch?feature=player_embedded&v=qnoMo0ynyZo)
 
 
-How to Run
-----------
-````
- Run server
- % plackup realtime-md-server.psgi
+## How to Run
 
- Browser
-   Access http://localhost:5000 (default)
+### Client
+Run plackup command and connect to Web application
 
- Client(Emacs)
-   M-x realtime-markdown-viewer-mode
+    M-x realtime-markdown-viewer-mode
 
-````
+
+### Browser
+Access to http://0.0.0.0:5021/
 
 
 Limitation
