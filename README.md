@@ -17,8 +17,29 @@ Emacs Realtime Markdown Viewer with websocket.el and Amon2.
 
 ## How to Run
 
+### Select language
+You can select WebApp implementation, Perl(Amon2) or Ruby(Sinatra).
+Default is Perl, because I'm beginner of Ruby programming.
+
+```` elisp
+;; Use Sinatra App
+(setq rtmv:lang 'ruby)
+````
+
+### Perl Dependency Setting
+
+````
+% cpanm Amon2 Amon2::Lite Protocol::WebSocket Twiggy
+````
+
+### Ruby Setting
+
+````
+% bundle install --path=vender/bundler
+````
+
 ### Client
-Run plackup command and connect to Web application
+Run WebApp and connect to Web application
 
     M-x realtime-markdown-viewer-mode
 
