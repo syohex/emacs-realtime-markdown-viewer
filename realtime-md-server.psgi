@@ -15,63 +15,46 @@ my $clients = {};
 any '/emacs' => sub {
     my $c = shift;
 
-    $c->websocket(
-        sub {
-            my $ws = shift;
+    $c->websocket(sub {
+        my $ws = shift;
 
-            $ws->on_receive_message(
-                sub {
-                    my ($c, $message) = @_;
-                    my $markdowned = markdown($message);
-                    for (keys %$clients) {
-                        $clients->{$_}->send_message($markdowned);
-                    }
-                }
-            );
+        $ws->on_receive_message(sub {
+            my ($c, $message) = @_;
+            my $markdowned = markdown($message);
+            for (keys %$clients) {
+                $clients->{$_}->send_message($markdowned);
+            }
+        });
 
-            $ws->on_eof(
-                sub {
-                    my $c = shift;
-                }
-            );
-            $ws->on_error(
-                sub {
-                    my $c = shift;
-                }
-            );
-        }
-    );
+        $ws->on_eof(sub {
+            my $c = shift;
+            warn "/emacs EOF";
+        });
+
+        $ws->on_error(sub {
+            my $c = shift;
+            warn "/emacs error";
+        });
+    });
 };
 
 any '/markdown' => sub {
     my ($c) = @_;
     my $id = Digest::SHA1::sha1_hex(rand() . $$ . {} . time);
 
-    $c->websocket(
-        sub {
-            my $ws = shift;
-            $clients->{$id} = $ws;
+    $c->websocket(sub {
+        my $ws = shift;
+        $clients->{$id} = $ws;
 
-            $ws->on_receive_message(
-                sub {
-                    my ( $c, $message ) = @_;
-                }
-            );
-            $ws->on_eof(
-                sub {
-                    my ($c) = @_;
-                    delete $clients->{$id};
-                }
-            );
-            $ws->on_error(
-                sub {
-                    my ($c) = @_;
-                    delete $clients->{$id};
-                }
-            );
-        }
-    );
-
+        $ws->on_eof(sub {
+            my ($c) = @_;
+            delete $clients->{$id};
+        });
+        $ws->on_error(sub {
+            my ($c) = @_;
+            delete $clients->{$id};
+        });
+    });
 };
 
 # load plugins
