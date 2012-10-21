@@ -35,7 +35,13 @@
 (defcustom rtmv:port 5021
   "Port number for Plack App"
   :type 'integer
-  :group 'reltime-markdown-viewer)
+  :group 'realtime-markdown-viewer)
+
+(defcustom rtmv:lang 'perl
+  "Language WebApp program"
+  :type '(choice (const :tag "Amon2 Web Application" perl)
+                 (const :tag "Sinatra Web Application") ruby)
+  :group 'realtime-markdown-viewer)
 
 (defvar rtmv:websocket)
 
@@ -56,32 +62,49 @@
     (let ((str (buffer-substring-no-properties (point-min) (point-max))))
       (websocket-send-text rtmv:websocket str))))
 
-(defvar rtmv:plackup-process nil)
+(defvar rtmv:webapp-process nil)
 
 (defvar rtmv:psgi-file "realtime-md-server.psgi"
   "File name of Realtime markdown viewer app")
 
-(defvar rtmv:psgi-path
+(defvar rtmv:sinatra-file "realtime_markdown_viewer.rb"
+  "File name of Realtime markdown viewer app")
+
+(defvar rtmv:webapp-path
   (when load-file-name
     (let ((installed-dir (file-name-directory load-file-name)))
-      (concat installed-dir rtmv:psgi-file)))
-  "PSGI full path")
+      (case rtmv:lang
+        (perl (concat installed-dir rtmv:psgi-file))
+        (ruby (concat installed-dir rtmv:sinatra-file)))))
+  "WebApp full path")
 
-(defun rtmv:plackup (port)
-  (let ((cmd (format "plackup --port %d %s" port rtmv:psgi-path)))
-    (setq rtmv:plackup-process
-          (start-process-shell-command "plackup" "*plackup*" cmd))))
+(defun rtmv:webapp-launch-command (port)
+  (case rtmv:lang
+    (perl (format "plackup --port %d %s" port rtmv:webapp-path))
+    (ruby (format "bundle exec ruby %s -p %d" rtmv:webapp-path port))))
+
+(defun rtmv:webapp-launch (port)
+  (let ((cmd (rtmv:webapp-launch-command port)))
+    (setq rtmv:webapp-process
+          (start-process-shell-command "rtmv" "*realtime markdown*" cmd))))
+
+(defun rtmv:kill-process ()
+  (when rtmv:webapp-process
+    (kill-process rtmv:webapp-process)
+    (setq rtmv:webapp-process nil)))
 
 (defun rtmv:init ()
   (let ((port rtmv:port))
-    (rtmv:plackup port)
+    (rtmv:webapp-launch port)
     (sleep-for 1)
     (rtmv:init-websocket port)
+    (add-hook 'kill-buffer-hook 'rtmv:kill-process)
     (add-hook 'post-command-hook 'rtmv:send-to-server nil t)))
 
 (defun rtmv:finalize ()
   (websocket-close rtmv:websocket)
-  (remove-hook 'post-command-hook 'rtmv:send-to-server t))
+  (remove-hook 'post-command-hook 'rtmv:send-to-server t)
+  (rtmv:kill-process))
 
 (define-minor-mode realtime-markdown-viewer-mode
   "Realtime Markdown Viewer mode"
