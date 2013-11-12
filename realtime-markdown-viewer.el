@@ -84,10 +84,11 @@
     (ruby (format "bundle exec ruby %s -p %d" rtmv:sinatra-file port))))
 
 (defun rtmv:webapp-launch (port)
-  (let ((cmd (rtmv:webapp-launch-command port))
-        (default-directory rtmv:module-path))
-    (setq rtmv:webapp-process
-          (start-process-shell-command "rtmv" "*realtime markdown*" cmd))))
+  (when (not rtmv:webapp-process)
+    (let ((cmd (rtmv:webapp-launch-command port))
+          (default-directory rtmv:module-path))
+      (setq rtmv:webapp-process
+            (start-process-shell-command "rtmv" "*realtime markdown*" cmd)))))
 
 (defun rtmv:kill-process ()
   (when rtmv:webapp-process
@@ -99,7 +100,7 @@
     (rtmv:webapp-launch port)
     (sleep-for 1)
     (rtmv:init-websocket port)
-    (add-hook 'kill-buffer-hook 'rtmv:kill-process)
+    (add-hook 'kill-emacs-hook 'rtmv:kill-process)
     (add-hook 'post-command-hook 'rtmv:send-to-server nil t)))
 
 (defun rtmv:finalize ()
