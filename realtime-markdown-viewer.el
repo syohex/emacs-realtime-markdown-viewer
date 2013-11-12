@@ -45,6 +45,8 @@
 
 (defvar rtmv:websocket)
 
+(defvar rtmv:module-path (file-name-directory load-file-name))
+
 (defun rtmv:init-websocket (port)
   (let ((url (format "ws://0.0.0.0:%d/emacs" port)))
     (message "Connect to %s" url)
@@ -84,7 +86,8 @@
     (ruby (format "bundle exec ruby %s -p %d" rtmv:webapp-path port))))
 
 (defun rtmv:webapp-launch (port)
-  (let ((cmd (rtmv:webapp-launch-command port)))
+  (let ((cmd (rtmv:webapp-launch-command port))
+        (default-directory rtmv:module-path))
     (setq rtmv:webapp-process
           (start-process-shell-command "rtmv" "*realtime markdown*" cmd))))
 
