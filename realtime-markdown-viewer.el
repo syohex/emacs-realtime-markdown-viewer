@@ -72,24 +72,23 @@
 (defvar rtmv:sinatra-file "realtime_markdown_viewer.rb"
   "File name of Realtime markdown viewer app")
 
-(defvar rtmv:webapp-path
-  (when load-file-name
-    (let ((installed-dir (file-name-directory load-file-name)))
-      (case rtmv:lang
-        (perl (concat installed-dir rtmv:psgi-file))
-        (ruby (concat installed-dir rtmv:sinatra-file)))))
+(defun rtmv:webapp-path ()
+  (case rtmv:lang
+    (perl (concat rtmv:module-path rtmv:psgi-file))
+    (ruby (concat rtmv:module-path rtmv:sinatra-file)))
   "WebApp full path")
 
 (defun rtmv:webapp-launch-command (port)
   (case rtmv:lang
-    (perl (format "plackup --port %d %s" port rtmv:webapp-path))
-    (ruby (format "bundle exec ruby %s -p %d" rtmv:webapp-path port))))
+    (perl (format "plackup --port %d %s" port rtmv:psgi-file))
+    (ruby (format "bundle exec ruby %s -p %d" rtmv:sinatra-file port))))
 
 (defun rtmv:webapp-launch (port)
-  (let ((cmd (rtmv:webapp-launch-command port))
-        (default-directory rtmv:module-path))
-    (setq rtmv:webapp-process
-          (start-process-shell-command "rtmv" "*realtime markdown*" cmd))))
+  (when (not rtmv:webapp-process)
+    (let ((cmd (rtmv:webapp-launch-command port))
+          (default-directory rtmv:module-path))
+      (setq rtmv:webapp-process
+            (start-process-shell-command "rtmv" "*realtime markdown*" cmd)))))
 
 (defun rtmv:kill-process ()
   (when rtmv:webapp-process
@@ -101,7 +100,7 @@
     (rtmv:webapp-launch port)
     (sleep-for 1)
     (rtmv:init-websocket port)
-    (add-hook 'kill-buffer-hook 'rtmv:kill-process)
+    (add-hook 'kill-emacs-hook 'rtmv:kill-process)
     (add-hook 'post-command-hook 'rtmv:send-to-server nil t)))
 
 (defun rtmv:finalize ()
