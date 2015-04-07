@@ -57,6 +57,12 @@ __END__
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="/static/jquery.min.js"></script>
     <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+    </script>
+    <script type="text/javascript"
+      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
 </head>
 <body>
     <div class="container">
@@ -74,6 +80,7 @@ __END__
             };
             ws.onmessage = function (ev) {
                 $('#preview').html(ev.data);
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, "preview"]);
             };
             ws.onerror = function (ev) {
                 console.log(ev);
