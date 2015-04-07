@@ -4,6 +4,7 @@
 require 'sinatra'
 require 'sinatra-websocket'
 require 'redcarpet'
+require 'coderay'
 
 set :server, 'thin'
 set :sockets, []
@@ -12,13 +13,24 @@ get '/' do
   erb :index
 end
 
+class HTMLwithCoderay < Redcarpet::Render::Safe
+  def block_code(code, language)
+    begin
+      CodeRay.scan(code, language.to_sym).div
+    rescue
+      super
+    end
+  end
+end
+
 get '/emacs' do
 
   request.websocket do |ws|
     ws.onopen { puts "@@ connect from emacs" }
     ws.onmessage do |msg|
-      markdown = RedcarpetCompat.new(msg)
-      html = markdown.to_html
+      renderer = HTMLwithCoderay.new()
+      markdown = Redcarpet::Markdown.new(renderer, :fenced_code_blocks => true)
+      html = markdown.render(msg)
       EM.next_tick do
         settings.sockets.each{|s| s.send(html) }
       end
@@ -57,6 +69,12 @@ __END__
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script type="text/javascript" src="/static/jquery.min.js"></script>
     <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+    </script>
+    <script type="text/javascript"
+      src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
 </head>
 <body>
     <div class="container">
@@ -74,6 +92,7 @@ __END__
             };
             ws.onmessage = function (ev) {
                 $('#preview').html(ev.data);
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, "preview"]);
             };
             ws.onerror = function (ev) {
                 console.log(ev);
