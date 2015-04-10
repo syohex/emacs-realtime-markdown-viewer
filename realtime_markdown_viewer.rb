@@ -29,7 +29,7 @@ get '/emacs' do
     ws.onopen { puts "@@ connect from emacs" }
     ws.onmessage do |msg|
       renderer = HTMLwithCoderay.new()
-      markdown = Redcarpet::Markdown.new(renderer, :fenced_code_blocks => true)
+      markdown = Redcarpet::Markdown.new(renderer, :fenced_code_blocks => true, :no_intra_emphasis => true)
       html = markdown.render(msg)
       EM.next_tick do
         settings.sockets.each{|s| s.send(html) }
