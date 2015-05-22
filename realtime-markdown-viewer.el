@@ -1,9 +1,11 @@
-;;; realtime-markdown-viewer.el ---
+;;; realtime-markdown-viewer.el --- Real time markdown viewer with WebSocket
 
-;; Copyright (C) 2012 by Syohei YOSHIDA
+;; Copyright (C) 2015 by Syohei YOSHIDA
 
 ;; Author: Syohei YOSHIDA <syohex@gmail.com>
 ;; URL: https://github.com/syohex/emacs-realtime-markdown-viewer
+;; Version: 0.01
+;; Package-Requires: ((cl-lib "0.5") (websocket "1.4"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -22,9 +24,7 @@
 
 ;;; Code:
 
-(eval-when-compile
-  (require 'cl))
-
+(require 'cl-lib)
 (require 'websocket)
 
 (defgroup realtime-markdown-viewer nil
@@ -73,13 +73,13 @@
   "File name of Realtime markdown viewer app")
 
 (defun rtmv:webapp-path ()
-  (case rtmv:lang
+  (cl-case rtmv:lang
     (perl (concat rtmv:module-path rtmv:psgi-file))
     (ruby (concat rtmv:module-path rtmv:sinatra-file)))
   "WebApp full path")
 
 (defun rtmv:webapp-launch-command (port)
-  (case rtmv:lang
+  (cl-case rtmv:lang
     (perl (format "plackup --port %d %s" port rtmv:psgi-file))
     (ruby (format "bundle exec ruby %s -p %d" rtmv:sinatra-file port))))
 
@@ -108,6 +108,7 @@
   (remove-hook 'post-command-hook 'rtmv:send-to-server t)
   (rtmv:kill-process))
 
+;;;###autoload
 (define-minor-mode realtime-markdown-viewer-mode
   "Realtime Markdown Viewer mode"
   :group      'realtime-markdown-viewer
