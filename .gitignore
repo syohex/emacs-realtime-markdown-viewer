@@ -1,3 +1,5 @@
 Gemfile.lock
-.bundle/
+/.bundle/
 vender/bundler
+/.cask/
+.elc
