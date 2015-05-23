@@ -57,7 +57,7 @@
                          (message "%s" (websocket-frame-payload frame)))
            :on-error (lambda (ws type err)
                        (message "error connecting"))
-           :on-close (lambda (websocket) (setq wstest-closed t))))))
+           :on-close (lambda (_websocket))))))
 
 (defun rtmv:send-to-server ()
   (when realtime-markdown-viewer-mode
